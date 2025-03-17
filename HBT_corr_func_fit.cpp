@@ -1,5 +1,5 @@
 
-// TO RUN THIS PROGRAM, USE :            g++ -o run correlfit.cpp `root-config --cflags --glibs`
+// TO RUN THIS PROGRAM, USE :  g++ -o run correlfit.cpp `root-config --cflags --glibs`
 
 #include <iostream>
 #include <fstream>
@@ -39,13 +39,13 @@ const double Rout_min = 2.0, Rout_max = 10.0;
 const double Rside_min = 2.0, Rside_max = 10.0;
 const double Rlong_min = 2.0, Rlong_max = 14.0;
 
-Double_t model_func_3D(Double_t *x, Double_t *par) {
+Double_t corr_fit_func_3D(Double_t *x, Double_t *par) {
 	Double_t qoutsq = x[0] * x[0];
 	Double_t qsidesq = x[1] * x[1];
 	Double_t qlongsq = x[2] * x[2];
 	Double_t lambda = TMath::Abs(par[0]);
-	Double_t gpart = TMath::Exp((-par[1]*par[1]*qoutsq - par[2]*par[2]*qsidesq - par[3]*par[3]*qlongsq) / 0.038937937);
-	return (1 + lambda*gpart);
+	Double_t exponent_term = TMath::Exp((-par[1]*par[1]*qoutsq - par[2]*par[2]*qsidesq - par[3]*par[3]*qlongsq) / 0.038937937);
+	return (1 + lambda*exponent_term);
 }
 
 
@@ -54,7 +54,7 @@ int main() {
 	ROOT::Math::MinimizerOptions::SetDefaultMaxFunctionCalls(1000000);
 	ROOT::Math::MinimizerOptions::SetDefaultTolerance(1e-6);
 	
-	std::ofstream outputFile("HBT_radii_data_19.6GeV.csv");
+	std::ofstream outputFile("HBT_radii_data.csv");
 	outputFile << "kT,Rout,Rside,Rlong,ParticleType\n"; // Header for the CSV file
 	
 	std::vector<double> Rout_storeval_1, Rside_storeval_1, Rlong_storeval_1;
@@ -68,7 +68,7 @@ int main() {
 	double kT_bins[kT_num_bins];
 	
 	for (int ii = 0; ii < kT_num_bins; ii++) {
-		kT_bins[ii] = kT_min + ii * step;
+		kT_bins[ii] = kT_min + (ii + 0.5) * step;
 	}
 	
 	for (int kTbin = 0; kTbin < kT_num_bins; kTbin++) {
@@ -93,10 +93,10 @@ int main() {
 			}
 			file.close();
 			
-			TF3 *fitFunc = new TF3("fitFunc", model_func_3D, qmin, qmax, qmin, qmax, qmin, qmax, 5);
-			fitFunc->SetParLimits(1, Rout_min, Rout_max);
-			fitFunc->SetParLimits(2, Rside_min, Rside_max);
-			fitFunc->SetParLimits(3, Rlong_min, Rlong_max);
+			TF3 *fitFunc = new TF3("fitFunc", corr_fit_func_3D, qmin, qmax, qmin, qmax, qmin, qmax, 5);
+//			fitFunc->SetParLimits(1, Rout_min, Rout_max);
+//			fitFunc->SetParLimits(2, Rside_min, Rside_max);
+//			fitFunc->SetParLimits(3, Rlong_min, Rlong_max);
 			fitFunc->FixParameter(0, 1.0);
 			fitFunc->SetParameter(0, lambda_ini);
 			fitFunc->SetParameter(1, Rout_ini);
@@ -182,9 +182,9 @@ int main() {
 	graphs[1]->GetYaxis()->SetTitle("R_{side} [fm]");
 	graphs[2]->GetYaxis()->SetTitle("R_{long} [fm]");
 	
-	graphs[0]->GetXaxis()->SetLimits(0.01, 1.51);
-	graphs[1]->GetXaxis()->SetLimits(0.01, 1.51);
-	graphs[2]->GetXaxis()->SetLimits(0.01, 1.51);
+	graphs[0]->GetXaxis()->SetLimits(0.01, 2.01);
+	graphs[1]->GetXaxis()->SetLimits(0.01, 2.01);
+	graphs[2]->GetXaxis()->SetLimits(0.01, 2.01);
 	
 	for (int i = 0; i < 3; i++) {
 		c1->cd(i + 1);
@@ -222,31 +222,31 @@ int main() {
 		graphs[i + 15]->SetLineWidth(1);
 
 		if (i==0 || i== 1) {
-			graphs[i]->SetMinimum(3.0);
-			graphs[i]->SetMaximum(7.0);
-			graphs[i+3]->SetMinimum(3.0);
-			graphs[i+3]->SetMaximum(7.0);
-			graphs[i+6]->SetMinimum(3.0);
-			graphs[i+6]->SetMaximum(7.0);
-			graphs[i+9]->SetMinimum(3.0);
-			graphs[i+9]->SetMaximum(7.0);
-			graphs[i+12]->SetMinimum(3.0);
-			graphs[i+12]->SetMaximum(7.0);
-			graphs[i+15]->SetMinimum(3.0);
-			graphs[i+15]->SetMaximum(7.0);
+			graphs[i]->SetMinimum(2.0);
+			graphs[i]->SetMaximum(10.0);
+			graphs[i+3]->SetMinimum(2.0);
+			graphs[i+3]->SetMaximum(10.0);
+			graphs[i+6]->SetMinimum(2.0);
+			graphs[i+6]->SetMaximum(10.0);
+			graphs[i+9]->SetMinimum(2.0);
+			graphs[i+9]->SetMaximum(10.0);
+			graphs[i+12]->SetMinimum(2.0);
+			graphs[i+12]->SetMaximum(10.0);
+			graphs[i+15]->SetMinimum(2.0);
+			graphs[i+15]->SetMaximum(10.0);
 		} else {
-			graphs[i]->SetMinimum(3.0);
-			graphs[i]->SetMaximum(11.0);
-			graphs[i+3]->SetMinimum(3.0);
-			graphs[i+3]->SetMaximum(11.0);
-			graphs[i+6]->SetMinimum(3.0);
-			graphs[i+6]->SetMaximum(11.0);
-			graphs[i+9]->SetMinimum(3.0);
-			graphs[i+9]->SetMaximum(11.0);
-			graphs[i+12]->SetMinimum(3.0);
-			graphs[i+12]->SetMaximum(11.0);
-			graphs[i+15]->SetMinimum(3.0);
-			graphs[i+15]->SetMaximum(11.0);
+			graphs[i]->SetMinimum(2.0);
+			graphs[i]->SetMaximum(14.0);
+			graphs[i+3]->SetMinimum(2.0);
+			graphs[i+3]->SetMaximum(14.0);
+			graphs[i+6]->SetMinimum(2.0);
+			graphs[i+6]->SetMaximum(14.0);
+			graphs[i+9]->SetMinimum(2.0);
+			graphs[i+9]->SetMaximum(14.0);
+			graphs[i+12]->SetMinimum(2.0);
+			graphs[i+12]->SetMaximum(14.0);
+			graphs[i+15]->SetMinimum(2.0);
+			graphs[i+15]->SetMaximum(14.0);
 		}
 			
 		graphs[i]->Draw("APC");
@@ -257,12 +257,12 @@ int main() {
 		graphs[i+15]->Draw("PC same"); 
 		
 		TLegend *leg = new TLegend(0.7, 0.5, 0.85, 0.85);
-		leg->AddEntry(graphs[i], "  #pi^{+}-#pi^{+}", "l");
-		leg->AddEntry(graphs[i+3], "  #pi^{-}-#pi^{-}", "l");
-		leg->AddEntry(graphs[i+6], "  #kappa^{+}-#kappa^{+}", "l");
-		leg->AddEntry(graphs[i+9], "  #kappa^{-}-#kappa^{-}", "l");
-		leg->AddEntry(graphs[i+12], "  p-p", "l");
-		leg->AddEntry(graphs[i+15], "  #bar{p}-#bar{p}", "l");
+		leg->AddEntry(graphs[i], "#pi^{+}-#pi^{+}", "l");
+		leg->AddEntry(graphs[i+3], "#pi^{-}-#pi^{-}", "l");
+		leg->AddEntry(graphs[i+6], "#kappa^{+}-#kappa^{+}", "l");
+		leg->AddEntry(graphs[i+9], "#kappa^{-}-#kappa^{-}", "l");
+		leg->AddEntry(graphs[i+12], "p-p", "l");
+		leg->AddEntry(graphs[i+15], "#bar{p}-#bar{p}", "l");
 		leg->SetBorderSize(0);
 		leg->SetTextSize(0.06);
 		leg->Draw();
